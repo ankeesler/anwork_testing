@@ -11,6 +11,8 @@ This documentation is generated from com.marshmallow.anwork.app.cli.GithubReadme
 ### `anwork summary <days:NUMBER>`
 * Show a summary of the past days of work
 * `<days:NUMBER>` : Number of days to look back for work
+### `anwork version`
+* Show the version information for this instance of ANWORK
 
 ## _anwork journal_ ... : Journal commands...
 ### `anwork journal show <task-specifier:STRING>`

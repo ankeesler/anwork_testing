@@ -63,7 +63,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\anwork.jar;%APP_HOME%\lib\guava-21.0.jar;%APP_HOME%\lib\protobuf-java-3.4.0.jar
+set CLASSPATH=%APP_HOME%\lib\anwork-1.jar;%APP_HOME%\lib\guava-21.0.jar;%APP_HOME%\lib\protobuf-java-3.4.0.jar
 
 @rem Execute anwork
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %ANWORK_OPTS%  -classpath "%CLASSPATH%" com.marshmallow.anwork.app.AnworkApp %CMD_LINE_ARGS%

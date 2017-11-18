@@ -1,1 +1,8 @@
 language: go
+
+# This takes a little bit of pressure off of the git clone of this repo.
+git:
+  depth: 3
+
+# Let's skip the install process for now. We don't need to install anything.
+install: true

@@ -1,12 +1,12 @@
 package v1
 
 import (
+	"core"
 	"testing"
-	"util"
 )
 
-func getAnwork(t *testing.T) *util.Anwork {
-	anwork, err := util.MakeAnwork(1) // version 1
+func getAnwork(t *testing.T) *core.Anwork {
+	anwork, err := core.MakeAnwork(1) // version 1
 	if err != nil {
 		t.Fatal("Cannot get anwork:", err)
 	}

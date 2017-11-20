@@ -1,5 +1,5 @@
 // This package contains utilities for running Anwork tests.
-package util
+package core
 
 import (
 	"archive/zip"

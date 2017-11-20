@@ -1,0 +1,6 @@
+# Go package and binary folders.
+pkg
+bin
+
+# Temporary directories.
+/tmp/

@@ -9,11 +9,11 @@ See [anwork](https://github.com/ankeesler/anwork) repo for source code to the AN
 ## Running Tests
 
 Tests and release packages are organized by release version. The idea is that if you want to run
-the tests associated with the V_x_ release, you should also run the tests from the V_i_ releases,
-where _i_ ranges from 1 to _x_, inclusive. Whenever you run the V_x_ tests, the V_x_ package will
+the tests associated with the V*x* release, you should also run the tests from the V*i* releases,
+where *i* ranges from 1 to *x*, inclusive. Whenever you run the V*x* tests, the V*x* package will
 be used for all tests.
 
-The following command will run the V_x_ test where _x_ is the latest release.
+The following command will run the V*x* test where *x* is the latest release.
 ```
 $ ./run-tests.sh
 ```

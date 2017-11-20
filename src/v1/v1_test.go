@@ -16,13 +16,36 @@ func getAnwork(t *testing.T) *core.Anwork {
 func TestCreate(t *testing.T) {
 	anwork := getAnwork(t)
 	defer anwork.Close()
-	output, err := anwork.Run("reset", "--force")
-	if err != nil {
-		t.Fatal("Failed to reset context:", err, output)
-	}
+	defer anwork.Run("reset", "-f")
 
-	output, err = anwork.Run("task", "create", "task-a")
-	if err != nil {
-		t.Fatal("Failed to create task:", err, output)
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"reset", "-f"}, []string{}},
+
+		// Create task-a and task-b. task-a is higher priority than task-b.
+		core.Expect{anwork, []string{"task", "create", "task-a", "-p", "15"}, []string{}},
+		core.Expect{anwork, []string{"task", "create", "task-b", "-p", "25"}, []string{}},
+
+		// Set task-a running and then set it blocked.
+		core.Expect{anwork, []string{"task", "set-running", "task-a"}, []string{}},
+		core.Expect{anwork, []string{"task", "set-blocked", "task-a"}, []string{}},
+
+		// Set task-b running and then set it finished.
+		core.Expect{anwork, []string{"task", "set-running", "task-b"}, []string{}},
+		core.Expect{anwork, []string{"task", "set-finished", "task-b"}, []string{}},
+
+		// Set task-a running and then set it finished.
+		core.Expect{anwork, []string{"task", "set-running", "task-a"}, []string{}},
+		core.Expect{anwork, []string{"task", "set-finished", "task-a"}, []string{}},
+
+		// Expect the summary.
+		core.Expect{anwork,
+			[]string{"task", "show", "-s"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				"FINISHED.*",
+				".*task-a",
+				".*task-b"}},
 	}
+	core.Run(t, expects...)
 }

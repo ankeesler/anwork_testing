@@ -30,9 +30,13 @@ release/
   latest/
     anwork.zip # Latest successfull build
 src/
+  core/        # Core test framework functionality
+    data/      # Test data for core test framework tests
   v1/
+    data/      # Test data for V1 release tests
     v1_test.go # Tests related to V1 release
   v2/
+    data/      # Test data for V2 release tests
     v2_test.go # Tests related to V2 release
   ...
 ```

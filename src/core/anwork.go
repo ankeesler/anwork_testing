@@ -3,9 +3,12 @@ package core
 
 import (
 	"archive/zip"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
+	"math"
+	"math/big"
 	"os"
 	"os/exec"
 	"path"
@@ -13,9 +16,6 @@ import (
 
 // This is the path to where the Anwork release zip files are kept.
 const ReleasePath string = "../../release"
-
-// This is the path to where the unzipped anwork packages are (temporarily) kept.
-const TmpPath string = "tmp"
 
 // Anwork represents an Anwork program that can be executed.
 type Anwork struct {
@@ -36,10 +36,10 @@ func MakeAnwork(version int) (*Anwork, error) {
 	}
 
 	reader, err := makeAnworkZipReader(path)
-	defer reader.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
 	destinationPath, err := makeDestinationDirectory()
 	if err != nil {
@@ -67,7 +67,10 @@ func MakeAnwork(version int) (*Anwork, error) {
 // Run a command with an instance of an anwork package. This function will return whatever the
 // command printed to stdout, or a non-nil error is something failed.
 func (anwork *Anwork) Run(command ...string) (string, error) {
-	cmd := exec.Command(anwork.binaryPath, command...)
+	arguments := make([]string, 0, 2+len(command))
+	arguments = append(arguments, "-o", anwork.packagePath)
+	arguments = append(arguments, command...)
+	cmd := exec.Command(anwork.binaryPath, arguments...)
 	output, err := cmd.Output()
 	return string(output), err
 }
@@ -90,18 +93,23 @@ func makeAnworkZipReader(path string) (*zip.ReadCloser, error) {
 }
 
 func makeDestinationDirectory() (string, error) {
-	// If the destination directory exists already, let's get rid of it.
-	if _, err := os.Stat(TmpPath); !os.IsNotExist(err) {
-		if err = os.RemoveAll(TmpPath); err != nil {
-			return "", err
-		}
+	maxRandom := big.NewInt(math.MaxUint16)
+	random, err := rand.Int(rand.Reader, maxRandom)
+	if err != nil {
+		return "", err
+	}
+	path := fmt.Sprintf("tmp_%04x", random.Int64())
+
+	// If the destination directory exists already, let's fail. Fail fast is good!
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		return "", errors.New("Anwork destination directory is already in use: " + path)
 	}
 
-	if err := os.Mkdir(TmpPath, os.ModeDir|os.ModePerm); err != nil {
+	if err := os.Mkdir(path, os.ModeDir|os.ModePerm); err != nil {
 		return "", err
 	}
 
-	return TmpPath, nil
+	return path, nil
 }
 
 func unzip(reader *zip.ReadCloser, destinationPath string) error {

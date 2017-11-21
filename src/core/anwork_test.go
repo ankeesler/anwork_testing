@@ -10,10 +10,13 @@ import (
 )
 
 func TestMakeAnwork(t *testing.T) {
+	t.Parallel()
+
 	anwork, err := MakeAnwork(1) // version 1
 	if err != nil {
 		t.Fatal("Failed to make anwork struct: ", err)
 	}
+	defer anwork.Close()
 
 	out, err := anwork.Run("version")
 	if err != nil {
@@ -24,9 +27,11 @@ func TestMakeAnwork(t *testing.T) {
 }
 
 func TestCloseAnwork(t *testing.T) {
+	t.Parallel()
+
 	anwork, err := MakeAnwork(1) // version 1
 	if err != nil {
-		t.Fatal("Failed to make anwork struct: ", err)
+		t.Fatal("Failed to make anwork struct:", err)
 	}
 
 	anwork.Close()
@@ -37,7 +42,39 @@ func TestCloseAnwork(t *testing.T) {
 	}
 }
 
+func TestParallelAnworkUse(t *testing.T) {
+	t.Parallel()
+
+	anwork1, err := MakeAnwork(1) // use version 1
+	if err != nil {
+		t.Fatal("Failed to make anwork1 struct:", err)
+	}
+	defer anwork1.Close()
+
+	anwork2, err := MakeAnwork(1) // use version 1
+	if err != nil {
+		t.Fatal("Failed to make anwork1 struct:", err)
+	}
+	defer anwork2.Close()
+
+	// Make sure both anwork structs are valid!
+	output, err := anwork1.Run("-d", "task", "create", "task-a")
+	if err != nil {
+		t.Fatalf("Failed to run anwork1 struct: %s. Output: %s", err, output)
+	} else if len(output) == 0 {
+		t.Fatal("Did not get any output from anwork1 struct")
+	}
+	output, err = anwork2.Run("-d", "task", "create", "task-a")
+	if err != nil {
+		t.Fatalf("Failed to run anwork2 struct: %s. Output: %s", err, output)
+	} else if len(output) == 0 {
+		t.Fatal("Did not get any output from anwork2 struct")
+	}
+}
+
 func TestAnworkZipPath(t *testing.T) {
+	t.Parallel()
+
 	path := makeAnworkZipPath(1) // version 1
 	if !fileExists(path) {
 		t.Fatal("Zip path (", path, ") does not exist")
@@ -45,6 +82,8 @@ func TestAnworkZipPath(t *testing.T) {
 }
 
 func TestAnworkZipReaderCreation(t *testing.T) {
+	t.Parallel()
+
 	path := makeAnworkZipPath(1) // version 1
 	_, err := makeAnworkZipReader(path)
 	if err != nil {
@@ -53,6 +92,8 @@ func TestAnworkZipReaderCreation(t *testing.T) {
 }
 
 func TestCreatingTempDirectory(t *testing.T) {
+	t.Parallel()
+
 	path, err := makeDestinationDirectory()
 	if err != nil {
 		t.Fatal("Did not successfully create destination directory", err)
@@ -66,7 +107,9 @@ func TestCreatingTempDirectory(t *testing.T) {
 }
 
 func TestUnzip(t *testing.T) {
-	testZipPath := "test.zip"
+	t.Parallel()
+
+	testZipPath := "data/test.zip"
 	reader, err := zip.OpenReader(testZipPath)
 	if err != nil {
 		t.Fatal("Cannot create reader for zipfile:", err)

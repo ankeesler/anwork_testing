@@ -5,6 +5,8 @@ import (
 )
 
 func TestBadExpectStruct(t *testing.T) {
+	t.Parallel()
+
 	anwork := mustGetAnwork(t)
 	defer anwork.Close()
 
@@ -23,9 +25,10 @@ func TestBadExpectStruct(t *testing.T) {
 }
 
 func TestIgnoreOutput(t *testing.T) {
+	t.Parallel()
+
 	anwork := mustGetAnwork(t)
 	defer anwork.Close()
-	defer anwork.Run("reset", "-f")
 
 	expects := []Expect{
 		Expect{anwork, []string{"reset", "-f"}, []string{}},         // don't care about output
@@ -45,9 +48,10 @@ func TestIgnoreOutput(t *testing.T) {
 }
 
 func TestMatchOutput(t *testing.T) {
+	t.Parallel()
+
 	anwork := mustGetAnwork(t)
 	defer anwork.Close()
-	defer anwork.Run("reset", "-f")
 
 	expects := []Expect{
 		Expect{anwork, []string{"reset", "-f"}, []string{}},
@@ -60,6 +64,8 @@ func TestMatchOutput(t *testing.T) {
 }
 
 func TestMakeOutputLines(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
 		output string
 		lines  []string
@@ -79,6 +85,8 @@ func TestMakeOutputLines(t *testing.T) {
 }
 
 func TestGetMatchedLines(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
 		lines   []string
 		regexes []string

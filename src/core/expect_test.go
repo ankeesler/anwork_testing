@@ -128,6 +128,18 @@ func TestGetMatchedLines(t *testing.T) {
 	}
 }
 
+func TestBadRegex(t *testing.T) {
+	t.Parallel()
+
+	anwork := mustGetAnwork(t)
+	defer anwork.Close()
+	expect := Expect{anwork, []string{"version"}, []string{"["}} // regex is missing a closing ']'
+	_, err := expect.Run(t)
+	if err == nil {
+		t.Error("Expected an error from bad regex!")
+	}
+}
+
 func areSlicesEqual(slice1, slice2 []string) bool {
 	if slice1 == nil {
 		return slice2 == nil

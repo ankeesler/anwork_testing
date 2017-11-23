@@ -227,6 +227,15 @@ func TestUnzip(t *testing.T) {
 	checkFileTree(t, path.Join(tmpDirPath, "test"), fileTree)
 }
 
+func TestNonExistentAnworkVersion(t *testing.T) {
+	t.Parallel()
+
+	_, err := MakeAnwork(65535) // I sure hope this version never exists...
+	if err == nil {
+		t.Fatal("Should have received an error from bad anwork version!")
+	}
+}
+
 func checkFileTree(t *testing.T, root string, fileTree map[string][]string) {
 	for directory, files := range fileTree {
 		if path := path.Join(root, directory); !fileExists(path) {

@@ -42,33 +42,116 @@ func TestCloseAnwork(t *testing.T) {
 	}
 }
 
-func TestParallelAnworkUse(t *testing.T) {
-	t.Parallel()
+func TestParallelAnworkCreation(t *testing.T) {
+	const anworksCount = 4
+	anworkChan := make(chan *Anwork, anworksCount)
+	defer close(anworkChan)
 
-	anwork1, err := MakeAnwork(1) // use version 1
-	if err != nil {
-		t.Fatal("Failed to make anwork1 struct:", err)
+	for i := 0; i < cap(anworkChan); i++ {
+		go func(i int) {
+			anwork, err := MakeAnwork(1) // version 1
+			if err != nil {
+				t.Errorf("Failed to make %dth anwork struct: %s", i, err)
+			} else {
+				t.Logf("Created anwork struct: %s", anwork)
+			}
+			anworkChan <- anwork
+		}(i)
 	}
-	defer anwork1.Close()
 
-	anwork2, err := MakeAnwork(1) // use version 1
-	if err != nil {
-		t.Fatal("Failed to make anwork1 struct:", err)
-	}
-	defer anwork2.Close()
+	for i := 0; i < cap(anworkChan); i++ {
+		anwork := <-anworkChan
+		output, err := anwork.Run("-d", "task", "create", "task-a")
+		if err != nil {
+			t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
+		} else if len(output) == 0 {
+			t.Errorf("Did not get any output from anwork struct")
+		} else {
+			t.Logf("Ran Anwork struct: %s", anwork)
+		}
 
-	// Make sure both anwork structs are valid!
-	output, err := anwork1.Run("-d", "task", "create", "task-a")
-	if err != nil {
-		t.Fatalf("Failed to run anwork1 struct: %s. Output: %s", err, output)
-	} else if len(output) == 0 {
-		t.Fatal("Did not get any output from anwork1 struct")
+		if err := anwork.Close(); err != nil {
+			t.Errorf("Could not close anwork struct: %s", anwork)
+		}
 	}
-	output, err = anwork2.Run("-d", "task", "create", "task-a")
-	if err != nil {
-		t.Fatalf("Failed to run anwork2 struct: %s. Output: %s", err, output)
-	} else if len(output) == 0 {
-		t.Fatal("Did not get any output from anwork2 struct")
+}
+
+func TestParallelAnworkRunning(t *testing.T) {
+	const anworksCount = 4
+	anworkChan := make(chan *Anwork, anworksCount)
+	defer close(anworkChan)
+	ranChan := make(chan bool, anworksCount)
+	defer close(ranChan)
+
+	for i := 0; i < cap(anworkChan); i++ {
+		anwork, err := MakeAnwork(1) // version
+		if err != nil {
+			t.Fatal("Failed to make %dth anwork struct: %s", i, err)
+		}
+		defer anwork.Close()
+		anworkChan <- anwork
+		t.Logf("Created anwork struct: %s", anwork)
+	}
+
+	for i := 0; i < cap(anworkChan); i++ {
+		go func() {
+			anwork := <-anworkChan
+			output, err := anwork.Run("-d", "task", "create", "task-a")
+			if err != nil {
+				t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
+			} else if len(output) == 0 {
+				t.Errorf("Did not get any output from anwork struct")
+			} else {
+				t.Logf("Ran Anwork struct: %s", anwork)
+			}
+			ranChan <- true
+		}()
+	}
+
+	// Sync here so that we ensure that the above go functions all returned.
+	for i := 0; i < cap(anworkChan); i++ {
+		_ = <-ranChan
+	}
+}
+
+func TestParallelAnworkCreationAndRunning(t *testing.T) {
+	const anworksCount = 4
+	createdChan := make(chan *Anwork, anworksCount)
+	defer close(createdChan)
+	ranChan := make(chan *Anwork, anworksCount)
+	defer close(ranChan)
+
+	for i := 0; i < cap(createdChan); i++ {
+		go func(i int) {
+			anwork, err := MakeAnwork(1) // version 1
+			if err != nil {
+				t.Errorf("Failed to make %dth anwork struct: %s", i, err)
+			} else {
+				t.Logf("Created anwork struct: %s", anwork)
+			}
+			createdChan <- anwork
+		}(i)
+	}
+
+	for i := 0; i < cap(ranChan); i++ {
+		go func(i int) {
+			anwork := <-createdChan
+			output, err := anwork.Run("-d", "task", "create", "task-a")
+			if err != nil {
+				t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
+			} else if len(output) == 0 {
+				t.Errorf("Did not get any output from anwork struct")
+			} else {
+				t.Logf("Ran Anwork struct: %s", anwork)
+			}
+			ranChan <- anwork
+		}(i)
+	}
+
+	// Sync here so that we ensure that the above go functions all returned.
+	for i := 0; i < cap(ranChan); i++ {
+		anwork := <-ranChan
+		anwork.Close()
 	}
 }
 

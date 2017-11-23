@@ -86,7 +86,7 @@ func TestParallelAnworkRunning(t *testing.T) {
 	for i := 0; i < cap(anworkChan); i++ {
 		anwork, err := MakeAnwork(1) // version
 		if err != nil {
-			t.Fatal("Failed to make %dth anwork struct: %s", i, err)
+			t.Fatalf("Failed to make %dth anwork struct: %s", i, err)
 		}
 		defer anwork.Close()
 		anworkChan <- anwork

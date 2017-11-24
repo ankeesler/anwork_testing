@@ -13,7 +13,7 @@ export set GOPATH="$PWD"
 note "Set GOPATH to: '$GOPATH'"
 
 note "Kicking off tests"
-go test core v1 -v -p 2
+go test core v1
 error=$?
 
 export set GOPATH="$previous"

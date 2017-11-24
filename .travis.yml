@@ -9,3 +9,10 @@ install: true
 
 script:
   - ./run-tests.sh
+
+notifications:
+  email:
+    recipients:
+      - ankeesler1@gmail.com
+    on_success: changed
+    on_failure: always

@@ -11,6 +11,7 @@
 #   running all the tests    (make test)
 #   running a single test    (make test-XXX)
 #   generating code coverage (make coverage)
+#   generating code profile  (make profile-XXX)
 #   cleaning test output     (make clean)
 #
 
@@ -28,7 +29,13 @@ coverage:
 	GOPATH="$(PWD)" go test core -coverprofile=cover.out
 	go tool cover -html=cover.out
 
+.PHONY:
+profile-%:
+	GOPATH="$(PWD)" go test core -cpuprofile=cpu.out
+	go tool pprof -web cpu.out
+
 .PHONY: clean
 clean:
-	rm -r .anwork-*
-	rm *.out
+	rm -rf .anwork-*
+	rm -f *.out
+	rm -f $(patsubst %,%.test,$(PACKAGES))

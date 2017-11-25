@@ -2,5 +2,5 @@
 pkg
 bin
 
-# Temporary directories.
-/tmp/
+# Unzipped anwork directory.
+.anwork-*

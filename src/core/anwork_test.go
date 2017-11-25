@@ -61,6 +61,11 @@ func TestParallelAnworkCreation(t *testing.T) {
 
 	for i := 0; i < cap(anworkChan); i++ {
 		anwork := <-anworkChan
+		if anwork == nil {
+			// We can get here if an above call to MakeAnwork fails.
+			continue
+		}
+
 		output, err := anwork.Run("-d", "task", "create", "task-a")
 		if err != nil {
 			t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
@@ -174,21 +179,6 @@ func TestAnworkZipReaderCreation(t *testing.T) {
 	}
 }
 
-func TestCreatingTempDirectory(t *testing.T) {
-	t.Parallel()
-
-	path, err := makeDestinationDirectory()
-	if err != nil {
-		t.Fatal("Did not successfully create destination directory", err)
-	}
-
-	if !fileExists(path) {
-		t.Fatal("Did not actually create the destination directory")
-	}
-
-	os.RemoveAll(path)
-}
-
 func TestUnzip(t *testing.T) {
 	t.Parallel()
 
@@ -205,7 +195,7 @@ func TestUnzip(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDirPath)
 
-	err = unzip(reader, tmpDirPath)
+	err = reallyUnzip(reader, tmpDirPath)
 	if err != nil {
 		t.Fatal("Did not unzip file successfully:", err)
 	}

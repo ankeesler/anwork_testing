@@ -15,7 +15,7 @@ be used for all tests.
 
 The following command will run the V*x* test where *x* is the latest release.
 ```
-$ ./run-tests.sh
+$ make test
 ```
 
 ## Directory Structure

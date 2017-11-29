@@ -40,7 +40,7 @@ func (expect *Expect) Run(t *testing.T) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	t.Logf("Got output from '%s' command: %s", expect.Command, output)
+	t.Logf("Got output from '%s' command:\n%s", expect.Command, output)
 
 	outputLines := makeOutputLines(output)
 

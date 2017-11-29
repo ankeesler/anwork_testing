@@ -103,6 +103,32 @@ func TestSetState(t *testing.T) {
 	core.Run(t, expects...)
 }
 
+func TestChangePriority(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	expects := []core.Expect{
+		// Create 2 tasks, change their priorities, and make sure they are what we expect.
+		core.Expect{anwork, []string{"task", "create", taskAName, "-p", taskAPriority}, []string{}},
+		core.Expect{anwork, []string{"task", "create", taskBName, "-p", taskBPriority}, []string{}},
+		core.Expect{anwork, []string{"task", "set-priority", taskAName, taskBPriority}, []string{}},
+		core.Expect{anwork, []string{"task", "set-priority", taskBName, taskAPriority}, []string{}},
+		core.Expect{anwork,
+			[]string{"task", "show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				".*" + taskBName + ".*",
+				".*priority.*" + taskAPriority + ".*",
+				".*" + taskAName + ".*",
+				".*priority.*" + taskBPriority + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+}
+
 func TestNote(t *testing.T) {
 	t.Parallel()
 
@@ -195,6 +221,23 @@ func TestDelete(t *testing.T) {
 	core.Run(t, expects...)
 
 	// We should not see any tasks.
+	expectDoesNotContain(t, anwork, taskBName)
+}
+
+func TestDeleteAll(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	expects := []core.Expect{
+		// Create 2 tasks, and then delete them both at the same time.
+		core.Expect{anwork, []string{"task", "create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"task", "create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"task", "delete-all"}, []string{}},
+	}
+	core.Run(t, expects...)
+	expectDoesNotContain(t, anwork, taskAName)
 	expectDoesNotContain(t, anwork, taskBName)
 }
 

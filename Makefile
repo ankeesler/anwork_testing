@@ -31,7 +31,7 @@ coverage:
 
 .PHONY:
 profile-%:
-	GOPATH="$(PWD)" go test core -cpuprofile=cpu.out
+	GOPATH="$(PWD)" go test $(patsubst profile-%,%,$@) -cpuprofile=cpu.out
 	go tool pprof -web cpu.out
 
 .PHONY: clean

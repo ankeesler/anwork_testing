@@ -3,24 +3,26 @@ package core
 
 import (
 	"archive/zip"
+	"crypto/md5"
 	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"math/big"
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"sync"
 )
 
 // This is the path to where the Anwork release zip files are kept.
 const ReleasePath string = "../../release"
 
-// This is the Once object for the unzip operation. Each Go runtime has a single unzipped package
-// that it works with. This object ensures that we only unzip the package once.
-var unzipper sync.Once
+// This is the lock that guards the unzipping procedure.
+var unzipMutex sync.Mutex
 
 // Anwork represents an Anwork program that can be executed.
 type Anwork struct {
@@ -39,13 +41,19 @@ func MakeAnwork(version int) (*Anwork, error) {
 		return nil, err
 	}
 
+	hash, err := getAnworkZipHash(path)
+	if err != nil {
+		return nil, err
+	}
+
 	reader, err := makeAnworkZipReader(path)
 	if err != nil {
 		return nil, err
 	}
 	defer reader.Close()
 
-	unzipPath, err := unzip(reader)
+	unzipPath := makeAnworkDestinationPath(hash)
+	err = unzip(reader, unzipPath)
 	if err != nil {
 		return nil, err
 	}
@@ -91,24 +99,43 @@ func makeAnworkZipPath(version int) string {
 	return fmt.Sprintf("%s/v%d/anwork-%d.zip", ReleasePath, version, version)
 }
 
+func getAnworkZipHash(path string) (string, error) {
+	contents, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	hash := md5.Sum(contents)
+	bytes := make([]string, len(hash))
+	for i, bite := range hash {
+		bytes[i] = fmt.Sprintf("%x", bite)
+	}
+
+	return strings.Join(bytes, ""), nil
+}
+
+func makeAnworkDestinationPath(hash string) string {
+	// This destination path is per executable so that we can run multiple test packages at the same
+	// time and the two packages won't stomp on each other.
+	executableName := path.Base(os.Args[0])
+	return fmt.Sprintf("../../.anwork-%s-%s", executableName, hash)
+}
+
 func makeAnworkZipReader(path string) (*zip.ReadCloser, error) {
 	reader, err := zip.OpenReader(path)
 	return reader, err
 }
 
-// This function returns the path of the unzipped package and any error associated with the
-// unzip procedure.
-func unzip(reader *zip.ReadCloser) (string, error) {
-	// This path is per-process so that 2 different test package executables won't stomp on each
-	// other.
-	var path string = fmt.Sprintf("../../.anwork-%d", os.Getpid())
+func unzip(reader *zip.ReadCloser, destinationPath string) error {
 	var err error = nil
 
-	unzipper.Do(func() {
-		reallyUnzip(reader, path)
-	})
+	unzipMutex.Lock()
+	if _, err = os.Stat(destinationPath); os.IsNotExist(err) {
+		err = reallyUnzip(reader, destinationPath)
+	}
+	unzipMutex.Unlock()
 
-	return path, err
+	return err
 }
 
 func reallyUnzip(reader *zip.ReadCloser, path string) error {

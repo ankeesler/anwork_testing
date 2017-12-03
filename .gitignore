@@ -1,6 +1,2 @@
-# Go package and binary folders.
-pkg
-bin
-
 # Unzipped anwork directory.
 .anwork-*

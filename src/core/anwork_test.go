@@ -9,6 +9,11 @@ import (
 	"testing"
 )
 
+const (
+	testZipPath      = "data/test.zip"
+	otherTestZipPath = "data/other.zip"
+)
+
 func TestMakeAnwork(t *testing.T) {
 	t.Parallel()
 
@@ -169,6 +174,41 @@ func TestAnworkZipPath(t *testing.T) {
 	}
 }
 
+func TestAnworkZipHash(t *testing.T) {
+	t.Parallel()
+
+	hash, err := getAnworkZipHash(testZipPath)
+	t.Run("Single", func(t *testing.T) {
+		if err != nil {
+			t.Fatalf("Error when calculating zip file hash: %s", err)
+		}
+	})
+	t.Run("Double", func(t *testing.T) {
+		hashAgain, errAgain := getAnworkZipHash(testZipPath)
+		if errAgain != nil {
+			t.Fatalf("Error when calculcating zip file hash for the second time: %s", err)
+		} else if hashAgain != hash {
+			t.Fatalf("Expected for two hashes to be the same value: %s vs %s", hash, hashAgain)
+		}
+	})
+	t.Run("BadFile", func(t *testing.T) {
+		_, err = getAnworkZipHash("this/path/does/not/exist.zip")
+		if err == nil {
+			t.Fatal("Expected error from hasing a non-existent file!")
+		}
+	})
+	t.Run("OtherFile", func(t *testing.T) {
+		otherHash, err := getAnworkZipHash(otherTestZipPath)
+		if err != nil {
+			t.Fatal("Got an error from unzipping other test data!")
+		} else if hash == otherHash {
+			t.Fatalf("Hmmm...I don't think these two hashes should be equal...%s vs %s", hash, otherHash)
+		} else {
+			t.Logf("Hashes look like '%s' and '%s'", hash, otherHash)
+		}
+	})
+}
+
 func TestAnworkZipReaderCreation(t *testing.T) {
 	t.Parallel()
 
@@ -182,7 +222,6 @@ func TestAnworkZipReaderCreation(t *testing.T) {
 func TestUnzip(t *testing.T) {
 	t.Parallel()
 
-	testZipPath := "data/test.zip"
 	reader, err := zip.OpenReader(testZipPath)
 	if err != nil {
 		t.Fatal("Cannot create reader for zipfile:", err)

@@ -8,7 +8,8 @@ git:
 install: true
 
 script:
-  - make test
+  - go test github.com/ankeesler/anwork_testing/core
+  - go test github.com/ankeesler/anwork_testing/v1
 
 notifications:
   email:

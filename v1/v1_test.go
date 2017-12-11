@@ -1,9 +1,10 @@
 package v1
 
 import (
-	"core"
 	"strings"
 	"testing"
+
+	"github.com/ankeesler/anwork_testing/core"
 )
 
 const (

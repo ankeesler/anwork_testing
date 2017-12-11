@@ -19,7 +19,7 @@ import (
 )
 
 // This is the path to where the Anwork release zip files are kept.
-const ReleasePath string = "../../release"
+const ReleasePath string = "../release"
 
 // This is the lock that guards the unzipping procedure.
 var unzipMutex sync.Mutex
@@ -118,7 +118,7 @@ func makeAnworkDestinationPath(hash string) string {
 	// This destination path is per executable so that we can run multiple test packages at the same
 	// time and the two packages won't stomp on each other.
 	executableName := path.Base(os.Args[0])
-	return fmt.Sprintf("../../.anwork-%s-%s", executableName, hash)
+	return fmt.Sprintf("../.anwork-%s-%s", executableName, hash)
 }
 
 func makeAnworkZipReader(path string) (*zip.ReadCloser, error) {

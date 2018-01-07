@@ -15,7 +15,7 @@ be used for all tests.
 
 The following command will run the V*x* test where *x* is the latest release.
 ```
-$ cd vx && go test
+$ TODO: we need an easy way to say "I want to run the tests for version X"
 ```
 
 ## Directory Structure
@@ -23,9 +23,9 @@ $ cd vx && go test
 ```
 release/
   v1/
-    anwork.zip # V1 release
+    anwork-1.zip # V1 release
   v2/
-    anwork.zip # V2 release
+    anwork-2.zip # V2 release
   ...
   latest/
     anwork.zip # Latest successfull build

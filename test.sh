@@ -39,8 +39,7 @@ runtest() {
     command="go test github.com/ankeesler/anwork_testing/$1 -args -v $2"
     if [ "$norun" -ne 1 ]; then
         note "running command: $command"
-        output="$($command)"
-        note "output:\n$output"
+        echo "$($command)"
     else
         note "NOT running command: $command"
     fi

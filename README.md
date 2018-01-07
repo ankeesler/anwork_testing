@@ -15,7 +15,7 @@ be used for all tests.
 
 The following command will run the V*x* test where *x* is the latest release.
 ```
-$ ./test.sh -v *x*
+$ ./test.sh -v x
 ```
 
 ## Directory Structure

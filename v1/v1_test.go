@@ -25,8 +25,14 @@ const (
 	taskCPriority    = "20"
 )
 
+var version int
+
+func TestMain(m *testing.M) {
+	core.RunTests(m, &version)
+}
+
 func getAnwork(t *testing.T) *core.Anwork {
-	anwork, err := core.MakeAnwork(1) // version 1
+	anwork, err := core.MakeAnwork(version)
 	if err != nil {
 		t.Fatal("Cannot get anwork:", err)
 	}

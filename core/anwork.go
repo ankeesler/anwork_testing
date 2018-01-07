@@ -1,4 +1,3 @@
-// This package contains utilities for running Anwork tests.
 package core
 
 import (

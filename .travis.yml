@@ -13,7 +13,7 @@ install: true
 
 script:
   - go test github.com/ankeesler/anwork_testing/core
-  - ./test.sh -v 1 -t 1
+  - ./test.sh -v 1
 
 notifications:
   email:

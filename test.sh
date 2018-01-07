@@ -5,10 +5,11 @@
 ME=`basename $0`
 
 usage() {
-    echo "usage: $ME [-v X] [-t X] [-l] [-a]"
+    echo "usage: $ME [-v X] [-t X] [-l] [-a] [-n]"
     echo
     echo "-a     Run all tests for every version"
     echo "-l     Run all the tests with the latest version"
+    echo "-n     Don't actually run the tests, only print the commands"
     echo "-t X   Only run the tests in package vX"
     echo "-v X   Run the tests for version X"
     echo
@@ -36,20 +37,26 @@ error() {
 
 runtest() {
     command="go test github.com/ankeesler/anwork_testing/$1 -args -v $2"
-    note "running command: $command"
-    output="$($command)"
-    note "output:\n$output"
+    if [ "$norun" -ne 1 ]; then
+        note "running command: $command"
+        output="$($command)"
+        note "output:\n$output"
+    else
+        note "NOT running command: $command"
+    fi
 }
 
 all=0
 latest=0
+norun=0
 tehst=
 version=
-while getopts alt:v: o
+while getopts alnt:v: o
 do
     case "$o" in
         a)   all=1;;
         l)   latest=1;;
+        n)   norun=1;;
         t)   tehst="$OPTARG";;
         v)   version="$OPTARG";;
         [?]) usage && exit 1;;
@@ -79,7 +86,10 @@ fi
 
 if [ -z "$tehst" ]; then
     for dir in ./v*; do
-        runtest "$(basename $dir)" "$version"
+        testversion="$(echo $(basename $dir) | sed -e 's/v//')"
+        if [ "$version" -ge "$testversion" ]; then
+            runtest "v$testversion" "$version"
+        fi
     done
 else
     runtest "v$tehst" "$version"

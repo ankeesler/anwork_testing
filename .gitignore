@@ -1,2 +1,5 @@
 # Unzipped anwork directory.
 .anwork-*
+
+# Emacs leftovers
+*~

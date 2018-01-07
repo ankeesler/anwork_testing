@@ -15,7 +15,7 @@ be used for all tests.
 
 The following command will run the V*x* test where *x* is the latest release.
 ```
-$ TODO: we need an easy way to say "I want to run the tests for version X"
+$ ./test.sh -v *x*
 ```
 
 ## Directory Structure

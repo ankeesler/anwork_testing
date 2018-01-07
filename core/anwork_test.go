@@ -2,6 +2,7 @@ package core
 
 import (
 	"archive/zip"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -12,29 +13,39 @@ import (
 const (
 	testZipPath      = "data/test.zip"
 	otherTestZipPath = "data/other.zip"
+
+	defaultVersion = 2
 )
 
 func TestMakeAnwork(t *testing.T) {
 	t.Parallel()
 
-	anwork, err := MakeAnwork(1) // version 1
-	if err != nil {
-		t.Fatal("Failed to make anwork struct: ", err)
-	}
-	defer anwork.Close()
+	for version := 1; true; version++ {
+		if !fileExists(makeAnworkZipPath(version)) {
+			break
+		}
 
-	out, err := anwork.Run("version")
-	if err != nil {
-		t.Fatal("Failed to successfully run anwork command:", err)
-	} else if len(out) == 0 {
-		t.Fatal("Failed to properly get the output from the version command:", out)
+		t.Run(fmt.Sprintf("Version%d", version), func(t *testing.T) {
+			anwork, err := MakeAnwork(version)
+			if err != nil {
+				t.Fatal("Failed to make anwork struct: ", err)
+			}
+			defer anwork.Close()
+
+			out, err := anwork.Run("version")
+			if err != nil {
+				t.Fatal("Failed to successfully run anwork command:", err)
+			} else if len(out) == 0 {
+				t.Fatal("Failed to properly get the output from the version command:", out)
+			}
+		})
 	}
 }
 
 func TestCloseAnwork(t *testing.T) {
 	t.Parallel()
 
-	anwork, err := MakeAnwork(1) // version 1
+	anwork, err := MakeAnwork(defaultVersion)
 	if err != nil {
 		t.Fatal("Failed to make anwork struct:", err)
 	}
@@ -54,7 +65,7 @@ func TestParallelAnworkCreation(t *testing.T) {
 
 	for i := 0; i < cap(anworkChan); i++ {
 		go func(i int) {
-			anwork, err := MakeAnwork(1) // version 1
+			anwork, err := MakeAnwork(defaultVersion)
 			if err != nil {
 				t.Errorf("Failed to make %dth anwork struct: %s", i, err)
 			} else {
@@ -71,7 +82,7 @@ func TestParallelAnworkCreation(t *testing.T) {
 			continue
 		}
 
-		output, err := anwork.Run("-d", "task", "create", "task-a")
+		output, err := anwork.Run("version")
 		if err != nil {
 			t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
 		} else if len(output) == 0 {
@@ -94,7 +105,7 @@ func TestParallelAnworkRunning(t *testing.T) {
 	defer close(ranChan)
 
 	for i := 0; i < cap(anworkChan); i++ {
-		anwork, err := MakeAnwork(1) // version
+		anwork, err := MakeAnwork(defaultVersion)
 		if err != nil {
 			t.Fatalf("Failed to make %dth anwork struct: %s", i, err)
 		}
@@ -106,7 +117,7 @@ func TestParallelAnworkRunning(t *testing.T) {
 	for i := 0; i < cap(anworkChan); i++ {
 		go func() {
 			anwork := <-anworkChan
-			output, err := anwork.Run("-d", "task", "create", "task-a")
+			output, err := anwork.Run("version")
 			if err != nil {
 				t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
 			} else if len(output) == 0 {
@@ -133,7 +144,7 @@ func TestParallelAnworkCreationAndRunning(t *testing.T) {
 
 	for i := 0; i < cap(createdChan); i++ {
 		go func(i int) {
-			anwork, err := MakeAnwork(1) // version 1
+			anwork, err := MakeAnwork(defaultVersion)
 			if err != nil {
 				t.Errorf("Failed to make %dth anwork struct: %s", i, err)
 			} else {
@@ -146,7 +157,7 @@ func TestParallelAnworkCreationAndRunning(t *testing.T) {
 	for i := 0; i < cap(ranChan); i++ {
 		go func(i int) {
 			anwork := <-createdChan
-			output, err := anwork.Run("-d", "task", "create", "task-a")
+			output, err := anwork.Run("version")
 			if err != nil {
 				t.Errorf("Failed to run anwork struct: %s. Output: %s", err, output)
 			} else if len(output) == 0 {
@@ -168,7 +179,7 @@ func TestParallelAnworkCreationAndRunning(t *testing.T) {
 func TestAnworkZipPath(t *testing.T) {
 	t.Parallel()
 
-	path := makeAnworkZipPath(1) // version 1
+	path := makeAnworkZipPath(defaultVersion)
 	if !fileExists(path) {
 		t.Fatal("Zip path (", path, ") does not exist")
 	}
@@ -212,7 +223,7 @@ func TestAnworkZipHash(t *testing.T) {
 func TestAnworkZipReaderCreation(t *testing.T) {
 	t.Parallel()
 
-	path := makeAnworkZipPath(1) // version 1
+	path := makeAnworkZipPath(defaultVersion)
 	_, err := makeAnworkZipReader(path)
 	if err != nil {
 		t.Fatal("Zip reader cannot be created from path (", path, "):", err)

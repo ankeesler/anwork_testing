@@ -1,0 +1,12 @@
+This README describes the release zip file format that this testing framework expects.
+
+All releases should be zipped up into a single zip file. The zip file should have the name
+"anwork-X.zip" where X is the version of the anwork release (e.g., anwork-15.zip).
+
+When the zip file is expanded, the directory structure should look as follows.
+anwork-X/  # X should be the version of the anwork release (e.g., anwork-15)
+  bin/
+    anwork # this is the anwork executable that will be called by the test framework
+  doc/
+    ...    # any documentation files should live here
+  ...      # there can be any number of other directories and files

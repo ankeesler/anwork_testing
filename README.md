@@ -27,8 +27,6 @@ release/
   v2/
     anwork-2.zip # V2 release
   ...
-  latest/
-    anwork.zip # Latest successfull build
 core/        # Core test framework functionality
   data/      # Test data for core test framework tests
 v1/

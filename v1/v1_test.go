@@ -41,6 +41,9 @@ func getAnwork(t *testing.T) *core.Anwork {
 
 func TestCreate(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of updated 'create' command flags")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -71,6 +74,9 @@ func TestCreate(t *testing.T) {
 
 func TestSetState(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of updated command names")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -112,6 +118,9 @@ func TestSetState(t *testing.T) {
 
 func TestChangePriority(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of simplified printing format")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -138,6 +147,9 @@ func TestChangePriority(t *testing.T) {
 
 func TestNote(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of simplified printing format")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -178,6 +190,9 @@ func TestNote(t *testing.T) {
 
 func TestJournal(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of updated command names")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -206,6 +221,9 @@ func TestJournal(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of updated command names")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()
@@ -233,6 +251,9 @@ func TestDelete(t *testing.T) {
 
 func TestDeleteAll(t *testing.T) {
 	t.Parallel()
+	if version != 1 {
+		t.Skipf("Skipping TestNote for non version 1 packages because of updated command names")
+	}
 
 	anwork := getAnwork(t)
 	defer anwork.Close()

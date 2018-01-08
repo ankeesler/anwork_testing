@@ -3,7 +3,9 @@ package core
 import (
 	"errors"
 	"fmt"
+	"path"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -57,13 +59,25 @@ func (expect *Expect) Run(t *testing.T) ([]string, error) {
 func Run(t *testing.T, expects ...Expect) {
 	for _, expect := range expects {
 		matched, err := expect.Run(t)
+		callerStr := getCallerStr()
 		if err != nil {
-			t.Errorf("Got error when running Expect struct %s: %s", expect, err)
+			t.Errorf("%s: Got error when running Expect struct %s: %s", callerStr, expect, err)
 		} else if len(matched) != len(expect.Regexes) {
-			t.Errorf("Did not match regex '%s' when running Expect struct %s",
-				expect.Regexes[len(matched)], expect)
+			t.Errorf("%s: Did not match regex '%s' when running Expect struct %s",
+				callerStr, expect.Regexes[len(matched)], expect)
 		}
 	}
+}
+
+func getCallerStr() string {
+	_, file, line, ok := runtime.Caller(2) // we want the caller of the caller of this function
+	if !ok {
+		file = "?"
+		line = 0
+	} else {
+		file = path.Base(file)
+	}
+	return fmt.Sprintf("%s:%d", file, line)
 }
 
 func makeOutputLines(output string) []string {

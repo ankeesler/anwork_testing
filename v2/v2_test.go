@@ -7,8 +7,11 @@ import (
 )
 
 const (
-	taskAName = "task-a"
-	taskBName = "task-b"
+	taskAName  = "task-a"
+	taskANote0 = "Note a 0"
+	taskANote1 = "Note a 1"
+	taskBName  = "task-b"
+	taskBNote0 = "Note b 0"
 )
 
 var version int
@@ -32,7 +35,7 @@ func TestCreate(t *testing.T) {
 	defer anwork.Close()
 
 	expects := []core.Expect{
-		// Create task-a and task-b. task-a is higher priority than task-b.
+		// Create task-a and task-b.
 		core.Expect{anwork,
 			[]string{"create", taskAName},
 			[]string{}},
@@ -46,6 +49,236 @@ func TestCreate(t *testing.T) {
 				"WAITING.*",
 				".*" + taskAName + ".*",
 				".*" + taskBName + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestPriority(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create task-a and task-b, give task-b a priority higer than task-a.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"set-priority", taskAName, "15"}, []string{}},
+		core.Expect{anwork, []string{"set-priority", taskBName, "5"}, []string{}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				".*" + taskBName + ".*",
+				".*" + taskAName + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+
+	// Change task-a to have a higher priority than task-b.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"set-priority", taskAName, "10"}, []string{}},
+		core.Expect{anwork, []string{"set-priority", taskBName, "20"}, []string{}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				".*" + taskAName + ".*",
+				".*" + taskBName + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+
+	// Make sure the individual journals for these tasks reflect the priority changes.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"journal", taskAName},
+			[]string{".*priority.*" + taskAName + ".*to 10",
+				".*priority.*" + taskAName + ".*to 15",
+				".*Created.*" + taskAName + ".*",
+			}},
+
+		core.Expect{anwork,
+			[]string{"journal", taskBName},
+			[]string{".*priority.*" + taskBName + ".*to 20",
+				".*priority.*" + taskBName + ".*to 5",
+				".*Created.*" + taskBName + ".*",
+			}},
+	}
+	core.Run(t, expects...)
+
+	// Check that the combined journal displays these 6 individual entries.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*", ".*", ".*", ".*", ".*", ".*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestState(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks and set them to different states.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"set-running", taskAName}, []string{}},
+		core.Expect{anwork, []string{"set-blocked", taskBName}, []string{}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				".*" + taskAName + ".*",
+				"BLOCKED.*",
+				".*" + taskBName + ".*",
+				"WAITING.*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+
+	// Set the tasks to new states.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"set-running", taskBName}, []string{}},
+		core.Expect{anwork, []string{"set-finished", taskAName}, []string{}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				".*" + taskBName + ".*",
+				"BLOCKED.*",
+				"WAITING.*",
+				"FINISHED.*",
+				".*" + taskAName + ".*"}},
+	}
+	core.Run(t, expects...)
+
+	// Make sure the individual journals for these tasks reflect the state changes.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"journal", taskAName},
+			[]string{".*state.*" + taskAName + ".*to Finished",
+				".*state.*" + taskAName + ".*to Running",
+				".*Created.*" + taskAName + ".*",
+			}},
+
+		core.Expect{anwork,
+			[]string{"journal", taskBName},
+			[]string{".*state.*" + taskBName + ".*to Running",
+				".*state.*" + taskBName + ".*to Blocked",
+				".*Created.*" + taskBName + ".*",
+			}},
+	}
+	core.Run(t, expects...)
+
+	// Check that the combined journal displays these 6 individual entries.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*", ".*", ".*", ".*", ".*", ".*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestNote(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks and add a note to one of them.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"note", taskAName, taskANote0}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal", taskAName},
+			[]string{".*" + taskANote0 + ".*", ".*Created.*" + taskAName + ".*"}},
+	}
+	core.Run(t, expects...)
+
+	// Add a note to the other task.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"note", taskBName, taskBNote0}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal", taskAName},
+			[]string{".*" + taskANote0 + ".*", ".*Created.*" + taskAName + ".*"}},
+		core.Expect{anwork,
+			[]string{"journal", taskBName},
+			[]string{".*" + taskBNote0 + ".*", ".*Created.*" + taskBName + ".*"}},
+	}
+	core.Run(t, expects...)
+
+	// Add a second note to the first task.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"note", taskAName, taskANote1}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal", taskAName},
+			[]string{".*" + taskANote1 + ".*",
+				".*" + taskANote0 + ".*",
+				".*Created.*" + taskAName + ".*"}},
+		core.Expect{anwork,
+			[]string{"journal", taskBName},
+			[]string{".*" + taskBNote0 + ".*",
+				".*Created.*" + taskBName + ".*"}},
+	}
+	core.Run(t, expects...)
+
+	// Check that the combined journal displays these 5 individual entries.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*", ".*", ".*", ".*", ".*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestDelete(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks and delete one of them.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"delete", taskAName}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*Deleted.*" + taskAName + ".*",
+				".*Created.*" + taskBName + ".*",
+				".*Created.*" + taskAName + ".*",
+			}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				".*" + taskBName + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+
+	// Delete the other task.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"delete", taskBName}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*Deleted.*" + taskBName + ".*",
+				".*Deleted.*" + taskAName + ".*",
+				".*Created.*" + taskBName + ".*",
+				".*Created.*" + taskAName + ".*",
+			}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
 				"FINISHED.*"}},
 	}
 	core.Run(t, expects...)

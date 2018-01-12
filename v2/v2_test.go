@@ -359,3 +359,32 @@ func TestDeleteAll(t *testing.T) {
 	}
 	core.Run(t, expects...)
 }
+
+func TestReset(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+	}
+	core.Run(t, expects...)
+
+	// Reset everything. Make sure it is gone.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"reset", "y"}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+}

@@ -52,6 +52,17 @@ func TestCreate(t *testing.T) {
 				"FINISHED.*"}},
 	}
 	core.Run(t, expects...)
+
+	// Make sure that the tasks are shown with the correct stuff.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"show", taskAName},
+			[]string{"Name: " + taskAName, "ID: 0", "State: WAITING"}},
+		core.Expect{anwork,
+			[]string{"show", taskBName},
+			[]string{"Name: " + taskBName, "ID: 1", "State: WAITING"}},
+	}
+	core.Run(t, expects...)
 }
 
 func TestPriority(t *testing.T) {
@@ -117,6 +128,17 @@ func TestPriority(t *testing.T) {
 			[]string{".*", ".*", ".*", ".*", ".*", ".*"}},
 	}
 	core.Run(t, expects...)
+
+	// Make sure that the tasks are shown with the correct priority.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"show", taskAName},
+			[]string{"Name: " + taskAName, "Priority: 10"}},
+		core.Expect{anwork,
+			[]string{"show", taskBName},
+			[]string{"Name: " + taskBName, "Priority: 20"}},
+	}
+	core.Run(t, expects...)
 }
 
 func TestState(t *testing.T) {
@@ -180,6 +202,17 @@ func TestState(t *testing.T) {
 		core.Expect{anwork,
 			[]string{"journal"},
 			[]string{".*", ".*", ".*", ".*", ".*", ".*"}},
+	}
+	core.Run(t, expects...)
+
+	// Make sure that the tasks are shown with the correct states.
+	expects = []core.Expect{
+		core.Expect{anwork,
+			[]string{"show", taskAName},
+			[]string{"Name: " + taskAName, "State: FINISHED"}},
+		core.Expect{anwork,
+			[]string{"show", taskBName},
+			[]string{"Name: " + taskBName, "State: RUNNING"}},
 	}
 	core.Run(t, expects...)
 }
@@ -274,6 +307,49 @@ func TestDelete(t *testing.T) {
 				".*Created.*" + taskBName + ".*",
 				".*Created.*" + taskAName + ".*",
 			}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestDeleteAll(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks and delete one of them.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"delete", taskAName}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*Deleted.*" + taskAName + ".*",
+				".*Created.*" + taskBName + ".*",
+				".*Created.*" + taskAName + ".*",
+			}},
+		core.Expect{anwork,
+			[]string{"show"},
+			[]string{"RUNNING.*",
+				"BLOCKED.*",
+				"WAITING.*",
+				".*" + taskBName + ".*",
+				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+
+	// Delete all of the tasks. Make sure they are gone.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"delete-all"}, []string{}},
+		core.Expect{anwork,
+			[]string{"journal"},
+			[]string{".*Deleted.*", ".*Deleted.*", ".*Created.*", ".*Created.*"}},
 		core.Expect{anwork,
 			[]string{"show"},
 			[]string{"RUNNING.*",

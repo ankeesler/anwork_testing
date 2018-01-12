@@ -2,6 +2,7 @@ package v2
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ankeesler/anwork_testing/core"
 )
@@ -385,6 +386,32 @@ func TestReset(t *testing.T) {
 				"BLOCKED.*",
 				"WAITING.*",
 				"FINISHED.*"}},
+	}
+	core.Run(t, expects...)
+}
+
+func TestSummary(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create 2 tasks.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+	}
+	core.Run(t, expects...)
+
+	// Wait one second.
+	time.Sleep(time.Second)
+
+	// Set one of the tasks as finished. They should be reported in the summary.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"set-finished", taskAName}, []string{}},
+		core.Expect{anwork,
+			[]string{"summary", "1"},
+			[]string{"\\[.*\\]:.*" + taskAName + ".*", "  took \\ds"}},
 	}
 	core.Run(t, expects...)
 }

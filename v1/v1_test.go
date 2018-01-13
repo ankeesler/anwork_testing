@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -276,4 +277,31 @@ func expectDoesNotContain(t *testing.T, anwork *core.Anwork, taskName string) {
 	} else if strings.Contains(output, taskName) {
 		t.Errorf("Didn't expect to see task name '%s' in output:\n%s", taskName, output)
 	}
+}
+
+func BenchmarkCreate(b *testing.B) {
+	if version != 1 {
+		b.Skipf("Skipping BenchmarkCreate for non version 1 packages because of updated command names")
+	}
+
+	b.N = 5
+	core.RunBenchmark(b, version, func(a *core.Anwork, i int) {
+		name := fmt.Sprintf("task-%d", i)
+		a.Run("task", "create", name)
+	})
+}
+
+func BenchmarkCrud(b *testing.B) {
+	if version != 1 {
+		b.Skipf("Skipping BenchmarkCreate for non version 1 packages because of updated command names")
+	}
+
+	b.N = 5
+	core.RunBenchmark(b, version, func(a *core.Anwork, i int) {
+		name := fmt.Sprintf("task-%d", i)
+		a.Run("task", "create", name)
+		a.Run("task", "show")
+		a.Run("task", "set-finished", name)
+		a.Run("task", "delete", name)
+	})
 }

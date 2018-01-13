@@ -5,8 +5,9 @@
 ME=`basename $0`
 
 usage() {
-    echo "usage: $ME -v X [-t X] [-n]"
+    echo "usage: $ME -v X [-b] [-t X] [-n]"
     echo
+    echo "-b     Run all benchmarks as well as tests"
     echo "-n     Don't actually run the tests, only print the commands"
     echo "-t X   Only run the tests in package vX"
     echo "-v X   Run the tests for version X"
@@ -25,7 +26,11 @@ error() {
 }
 
 runtest() {
-    command="go test github.com/ankeesler/anwork_testing/$1 -args -v $2"
+    command="go test"
+    if [ "$bench" -eq 1 ]; then
+        command="$command -bench ."
+    fi
+    command="$command github.com/ankeesler/anwork_testing/$1 -args -v $2"
     if [ "$norun" -ne 1 ]; then
         note "running command: $command"
         echo "$($command)"
@@ -34,12 +39,14 @@ runtest() {
     fi
 }
 
+bench=0
 norun=0
 tehst=
 version=
-while getopts alnt:v: o
+while getopts bnt:v: o
 do
     case "$o" in
+        b)   bench=1;;
         n)   norun=1;;
         t)   tehst="$OPTARG";;
         v)   version="$OPTARG";;

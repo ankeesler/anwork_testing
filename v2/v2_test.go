@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -414,4 +415,23 @@ func TestSummary(t *testing.T) {
 			[]string{"\\[.*\\]:.*" + taskAName + ".*", "  took \\ds"}},
 	}
 	core.Run(t, expects...)
+}
+
+func BenchmarkCreate(b *testing.B) {
+	b.N = 5
+	core.RunBenchmark(b, version, func(a *core.Anwork, i int) {
+		name := fmt.Sprintf("task-%d", i)
+		a.Run("create", name)
+	})
+}
+
+func BenchmarkCrud(b *testing.B) {
+	b.N = 5
+	core.RunBenchmark(b, version, func(a *core.Anwork, i int) {
+		name := fmt.Sprintf("task-%d", i)
+		a.Run("create", name)
+		a.Run("show")
+		a.Run("set-finished", name)
+		a.Run("delete", name)
+	})
 }

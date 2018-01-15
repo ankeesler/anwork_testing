@@ -417,6 +417,33 @@ func TestSummary(t *testing.T) {
 	core.Run(t, expects...)
 }
 
+func TestIdUniqueness(t *testing.T) {
+	t.Parallel()
+
+	anwork := getAnwork(t)
+	defer anwork.Close()
+
+	// Create a task. Make sure it has id 0.
+	expects := []core.Expect{
+		core.Expect{anwork, []string{"create", taskAName}, []string{}},
+		core.Expect{anwork, []string{"show", taskAName}, []string{"ID: 0"}},
+	}
+	core.Run(t, expects...)
+
+	// Delete the task.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"delete", taskAName}, []string{}},
+	}
+	core.Run(t, expects...)
+
+	// Create another task. Make sure it has id 1.
+	expects = []core.Expect{
+		core.Expect{anwork, []string{"create", taskBName}, []string{}},
+		core.Expect{anwork, []string{"show", taskBName}, []string{"ID: 1"}},
+	}
+	core.Run(t, expects...)
+}
+
 func BenchmarkCreate(b *testing.B) {
 	b.N = 5
 	core.RunBenchmark(b, version, func(a *core.Anwork, i int) {

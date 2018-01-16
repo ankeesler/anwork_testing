@@ -1,0 +1,40 @@
+The default-context in this directory should hold 3 tasks. Here are the details of the tasks.
+
+  $ anwork show
+  RUNNING tasks:
+    task-c (2)
+  BLOCKED tasks:
+    task-b (1)
+  WAITING tasks:
+  FINISHED tasks:
+    task-a (0)
+
+  $ anwork show task-a
+  Name: task-a
+  ID: 0
+  Created: Monday January 15 18:59
+  Priority: 10
+  State: FINISHED
+
+  $ anwork show task-b
+  Name: task-b
+  ID: 1
+  Created: Monday January 15 18:59
+  Priority: 10
+  State: BLOCKED
+
+  $ anwork show task-c
+  Name: task-c
+  ID: 2
+  Created: Monday January 15 18:59
+  Priority: 10
+  State: RUNNING
+
+  $ anwork journal
+  [Monday January 15 19:00]: Set state on task task-c from Waiting to Running
+  [Monday January 15 19:00]: Set state on task task-a from Running to Finished
+  [Monday January 15 19:00]: Set state on task task-b from Waiting to Blocked
+  [Monday January 15 18:59]: Set state on task task-a from Waiting to Running
+  [Monday January 15 18:59]: Created task task-c
+  [Monday January 15 18:59]: Created task task-b
+  [Monday January 15 18:59]: Created task task-a

@@ -1,0 +1,24 @@
+
+
+task-a ó€õÒ(
+0
+
+task-b ö€õÒ(
+0
+
+task-c ø€õÒ(
+0Ğ
+
+Created task task-aó€õÒ
+
+Created task task-bö€õÒ 
+
+Created task task-cø€õÒ 
+:
+0Set state on task task-a from Waiting to Runningı€õÒ
+<
+0Set state on task task-b from Waiting to Blocked‚õÒ 
+;
+1Set state on task task-a from Running to Finished‡õÒ
+<
+0Set state on task task-c from Waiting to RunningŒõÒ 

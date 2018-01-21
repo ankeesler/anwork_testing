@@ -15,6 +15,7 @@ script:
   - go test github.com/ankeesler/anwork_testing/core
   - ./test.sh -v 1 -b
   - ./test.sh -v 2 -b
+  - ./test.sh -v 3 -b
 
 notifications:
   email:

@@ -1,0 +1,3 @@
+[submodule "submodules/anwork"]
+	path = submodules/anwork
+	url = https://github.com/ankeesler/anwork.git

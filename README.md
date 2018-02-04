@@ -1,5 +1,8 @@
 # ANWORK TESTING
 
+NOTE: This repo has been deprecated now that there are integration tests in the anwork repo.
+Check them out here: https://github.com/ankeesler/anwork/tree/master/integration.
+
 This repo contains the test infrastructure and tests for the ANWORK project.
 
 [![Build Status](https://travis-ci.org/ankeesler/anwork_testing.svg?branch=master)](https://travis-ci.org/ankeesler/anwork_testing)
